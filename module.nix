@@ -341,8 +341,6 @@ redis = {
             example = "6VhAWVKlqu/dJSdz6TVgEJn/cbbAidwsFvg9ddOwuPRssEs0OtzAhJxLcLVC";
           };
         };
-
-      };
     };
 
     config = mkIf cfg.enable {

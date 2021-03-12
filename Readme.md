@@ -5,9 +5,9 @@ Below is an example of a nixos configuration using this flake :
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
-  inputs.funkwhale.url = "github:mmai/bookwyrm-nixos";
+  inputs.bookwyrm.url = "github:mmai/bookwyrm-nixos";
 
-  outputs = { self, nixpkgs, funkwhale }: 
+  outputs = { self, nixpkgs, bookwyrm }: 
   let
     system = "x86_64-linux";
   in {
@@ -17,7 +17,7 @@ Below is an example of a nixos configuration using this flake :
         system = system;
         modules = [ 
           nixpkgs.nixosModules.notDetected
-	        funkwhale.nixosModule
+	        bookwyrm.nixosModule
           ( { config, pkgs, ... }:
             { imports = [ ./hardware-configuration.nix ];
 
@@ -28,9 +28,9 @@ Below is an example of a nixos configuration using this flake :
                 '';
               };
 
-              nixpkgs.overlays = [ funkwhale.overlay ];
+              nixpkgs.overlays = [ bookwyrm.overlay ];
 
-              services.funkwhale = {
+              services.bookwyrm = {
                 enable = true;
                 hostname = "bookwyrm.rhumbs.fr";
                 defaultFromEmail = "noreply@bookwyrm.rhumbs.fr";

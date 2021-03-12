@@ -9,7 +9,7 @@
       container = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
-          funkwhale.nixosModule
+          bookwyrm.nixosModule
           ( { pkgs, ... }: 
           let hostname = "bookwyrm";
           in {
