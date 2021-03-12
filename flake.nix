@@ -16,35 +16,33 @@
     );
   in {
     overlay = final: prev: {
-
       bookwyrm = with final; (stdenv.mkDerivation {
-          name = "bookwyrm";
-          version = "0.0.1";
-          src = fetchFromGithub {
-            owner = "mouse-reeve";
-            repo = "bookwyrm";
-            rev = "a63471c56f6d8b88001b77990fdbae2964a3118b";
-            sha256 = "1rs9bxxrw4wscf4a8yl776a8g880m5gcm75q06yx2cn3lw2b7v22";
-          };
+        name = "bookwyrm";
+        version = "0.0.1";
+        src = fetchFromGithub {
+          owner = "mouse-reeve";
+          repo = "bookwyrm";
+          rev = "a63471c56f6d8b88001b77990fdbae2964a3118b";
+          sha256 = "1rs9bxxrw4wscf4a8yl776a8g880m5gcm75q06yx2cn3lw2b7v22";
+        };
 
-          installPhase = ''
+        installPhase = ''
             mkdir $out
             cp -R ./* $out
-          '';
+        '';
 
-          meta = with stdenv.lib; {
-            description = "Social reading and reviewing, decentralized with ActivityPub";
-            homepage = https://bookwyrm.social/;
-            license = {
-              shortName = "ACSL";
-              fullName = "Anti-Capitalist Software License";
-              url = "https://anticapitalist.software/";
-            };
-            platforms = platforms.linux;
-            maintainers = with maintainers; [ mmai ];
+        meta = with stdenv.lib; {
+          description = "Social reading and reviewing, decentralized with ActivityPub";
+          homepage = https://bookwyrm.social/;
+          license = {
+            shortName = "ACSL";
+            fullName = "Anti-Capitalist Software License";
+            url = "https://anticapitalist.software/";
           };
-        });
-    };
+          platforms = platforms.linux;
+          maintainers = with maintainers; [ mmai ];
+        };
+      });
 
     # ------- Python dependencies missing from nixos -----------
 
@@ -77,7 +75,7 @@
         sha256 = "sha256-2da44b7c30114415aa858577fa6396ee326fc76a0a60f0f15e8260ba554f19dc"; # wheel
         # sha256 = "sha256-3f6def554abb5455141b540e6e0b72fda3853404f2b0d31658aab1bf95410db3"; #tar.gz
       };
-      propagatedBuildInputs = [ marshmallow python-dotenv dj-database-url dj-email-url django-cache-url ]
+      propagatedBuildInputs = [ marshmallow python-dotenv dj-database-url dj-email-url django-cache-url ];
       # doCheck = false;
 
       meta = with stdenv.lib; {
@@ -97,7 +95,7 @@
         sha256 = "sha256-47e9954cdb26ac1b2b0c951e9d630cd8d79b733bb7713e0d137a8a969af31e5a"; # wheel
         # sha256 = "sha256-d59990f11e0e5c73fff62122daf4dbd52185dc1e050e3b41fd7954f579fca056"; #tar.gz
       };
-      propagatedBuildInputs = [ django ]
+      propagatedBuildInputs = [ django ];
       # doCheck = false;
 
       meta = with stdenv.lib; {
@@ -107,6 +105,7 @@
         maintainers = with maintainers; [ mmai ];
       };
     });
+  };
 
     packages = forAllSystems (system: {
       inherit (nixpkgsFor.${system}) bookwyrm;
