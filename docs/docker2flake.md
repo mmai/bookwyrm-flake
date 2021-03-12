@@ -6,17 +6,13 @@ Look at docker-compose.yml and list services to implement, ordering them by depe
 * [x] redis
 * [x] celery-worker (depends on db & redis)
 * [x] web (depends on celery-worker)
-* [] nginx (depends on web)
+* [x] nginx (depends on web)
 * certbot : bot letsencrypt -> déjà géré par nixos
 * flower (depends on db & redis) : celery monitoring -> on déporte en dehors du flake bookwyrm
 
 ## General module.nix conf
 
 * replicate .env.example in bookwyrmEnvironment with corresponding options
-
-## DB
-
-
 
 ## Web : Django
 

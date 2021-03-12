@@ -406,7 +406,7 @@ redis = {
             forceSSL = cfg.forceSSL;
             root = "${cfg.dataDir}/front";
           # gzip config is nixos nginx recommendedGzipSettings with gzip_types 
-          # from bookwyrm doc (https://docs.bookwyrm.audio/changelog.html#id5)
+          # from funkwhale doc (https://docs.funkwhale.audio/changelog.html#id5)
             extraConfig = ''
               add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; media-src 'self' data:";
               add_header Referrer-Policy "strict-origin-when-cross-origin";
@@ -440,53 +440,8 @@ redis = {
                 extraConfig = proxyConfig;
                 proxyPass = "http://bookwyrm-api/";
               };
-              "/front/" = {
-                alias = "${cfg.dataDir}/front/";
-                extraConfig = ''
-                  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; media-src 'self' data:";
-                  add_header Referrer-Policy "strict-origin-when-cross-origin";
-                  expires 30d;
-                  add_header Pragma public;
-                  add_header Cache-Control "public, must-revalidate, proxy-revalidate";
-                '';
-              };
-              "= /front/embed.html" = {
-                alias = "${cfg.dataDir}/front/embed.html";
-                extraConfig = ''
-                  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; media-src 'self' data:";
-                  add_header Referrer-Policy "strict-origin-when-cross-origin";
-                  add_header X-Frame-Options "ALLOW";
-                  expires 30d;
-                  add_header Pragma public;
-                  add_header Cache-Control "public, must-revalidate, proxy-revalidate";
-                '';
-              };
-              "/federation/" = { 
-                extraConfig = proxyConfig;
-                proxyPass = "http://bookwyrm-api/federation/";
-              };
-              "/rest/" = { 
-                extraConfig = proxyConfig;
-                proxyPass = "http://bookwyrm-api/api/subsonic/rest/";
-              };
-              "/.well-known/" = { 
-                extraConfig = proxyConfig;
-                proxyPass = "http://bookwyrm-api/.well-known/";
-              };
-              "/media/".alias = "${cfg.api.mediaRoot}/";
-              "/_protected/media/" = {
-                extraConfig = ''
-                  internal;
-                '';
-                alias = "${cfg.api.mediaRoot}/";
-              };
-              "/_protected/music/" = {
-                extraConfig = ''
-                  internal;
-                '';
-                alias = "${cfg.musicPath}/";
-              };
-              "/staticfiles/".alias = "${cfg.api.staticRoot}/";
+              "/images/".alias = "${cfg.api.mediaRoot}/";
+              "/static/".alias = "${cfg.api.staticRoot}/";
             };
           };
         };
@@ -496,7 +451,6 @@ redis = {
         "d ${cfg.dataDir} 0755 ${cfg.user} ${cfg.group} - -"
         "d ${cfg.api.mediaRoot} 0755 ${cfg.user} ${cfg.group} - -"
         "d ${cfg.api.staticRoot} 0755 ${cfg.user} ${cfg.group} - -"
-        "d ${cfg.musicPath} 0755 ${cfg.user} ${cfg.group} - -"
       ];
 
       systemd.targets.bookwyrm = {
@@ -524,8 +478,8 @@ redis = {
         # TODO : test if bookwyrm version has been updated and if so : regenerate .env links and copy front 
         bookwyrm-init = {
           description = "bookwyrm initialization";
-          wantedBy = [ "bookwyrm-server.service" "bookwyrm-worker.service" "bookwyrm-beat.service" ];
-          before   = [ "bookwyrm-server.service" "bookwyrm-worker.service" "bookwyrm-beat.service" ];
+          wantedBy = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
+          before   = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
           environment = bookwyrmEnv;
           serviceConfig = {
             User = "${cfg.user}";
@@ -542,22 +496,10 @@ redis = {
               chmod u+x ${cfg.dataDir}/createSuperUser.sh
               chown -R ${cfg.user}.${cfg.group} ${cfg.dataDir}
             fi
-            if ! test -e ${cfg.dataDir}/importMusic.sh; then
-              echo "#!/bin/sh
-
-              LIBRARY_ID=\$1
-              ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/api/manage.py \
-                import_files \$LIBRARY_ID '/srv/bookwyrm/music/imports --recursive --noinput --in-place" > ${cfg.dataDir}/importMusic.sh
-              chmod u+x ${cfg.dataDir}/importMusic.sh
-              chown -R ${cfg.user}.${cfg.group} ${cfg.dataDir}
-            fi
             if ! test -e ${cfg.dataDir}/config; then
               mkdir -p ${cfg.dataDir}/config
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/config/.env
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/.env
-            fi
-            if ! test -e ${cfg.dataDir}/front; then
-              cp -r ${pkgs.bookwyrm-front} ${cfg.dataDir}/front
             fi
           '';
         };
