@@ -92,7 +92,8 @@ in
           default = "bookwyrm";
           description = "Group under which bookwyrm is ran.";
         };
-redis = {
+
+        redis = {
           password = mkOption {
             type = types.str;
             default = "";
@@ -306,8 +307,6 @@ redis = {
           };
         };
 
-      };
-
         defaultFromEmail = mkOption {
           type = types.str;
           description = ''
@@ -341,6 +340,7 @@ redis = {
             example = "6VhAWVKlqu/dJSdz6TVgEJn/cbbAidwsFvg9ddOwuPRssEs0OtzAhJxLcLVC";
           };
         };
+      };
     };
 
     config = mkIf cfg.enable {

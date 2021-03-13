@@ -5,17 +5,13 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1615554030,
-        "narHash": "sha256-4O1n6gYmfwi6LBfcYJi8Sof5rronLeDiuVJ6Q4zKGQo=",
-        "owner": "mmai",
-        "repo": "bookwyrm-flake",
-        "rev": "7c4d47b1067dbf9b8afb9a23c1a3106180c9b647",
-        "type": "github"
+        "narHash": "sha256-vAgwAVmZlkQV8xMPMNSsg8ZfH8u9MrQLUPATCGI2a5A=",
+        "path": "/home/henri/travaux/nix-flakes/bookwyrm-flake",
+        "type": "path"
       },
       "original": {
-        "owner": "mmai",
-        "repo": "bookwyrm-flake",
-        "type": "github"
+        "path": "/home/henri/travaux/nix-flakes/bookwyrm-flake",
+        "type": "path"
       }
     },
     "nixpkgs": {
