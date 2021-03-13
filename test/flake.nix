@@ -1,7 +1,8 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
-  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
-  # inputs.bookwyrm.url = "/home/henri/travaux/nix-flakes/bookwyrm-flake/";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
+  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
+  # inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
+  inputs.bookwyrm.url = "/home/henri/travaux/nix-flakes/bookwyrm-flake/";
 
   outputs = { self, nixpkgs, bookwyrm }: 
    {
@@ -37,6 +38,12 @@
                   # Generate one using `openssl rand -base64 45`, for example
                   djangoSecretKey = "yoursecretkey";
                 };
+              };
+
+              email = {
+                host = "smtp.gmail.com";
+                user = "henri.bourcereau";
+                password = "ooooo";
               };
 
               # Overrides default 30M

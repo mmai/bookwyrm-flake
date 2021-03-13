@@ -61,9 +61,9 @@ let
     # "FLOWER_USER=${flower.user}"
     # "FLOWER_PASSWORD=${flowerPassword}"
 
-    "EMAIL_HOST=${email.host}"
-    "EMAIL_PORT=${email.port}"
-    "EMAIL_HOST_USER=${email.user}"
+    "EMAIL_HOST=${cfg.email.host}"
+    "EMAIL_PORT=${cfg.email.port}"
+    "EMAIL_HOST_USER=${cfg.email.user}"
     "EMAIL_HOST_PASSWORD=${emailPassword}"
     "EMAIL_USE_TLS=true"
   ];
