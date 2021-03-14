@@ -37,7 +37,6 @@
               api = {
                   # Generate one using `openssl rand -base64 45`, for example
                   djangoSecretKey = "yoursecretkey";
-                };
               };
 
               email = {
@@ -46,10 +45,12 @@
                 password = "ooooo";
               };
 
-              # Overrides default 30M
-              services.nginx.clientMaxBodySize = "100m";
+            };
 
-            })
+            # Overrides default 30M
+            services.nginx.clientMaxBodySize = "100m";
+
+          })
         ];
       };
 

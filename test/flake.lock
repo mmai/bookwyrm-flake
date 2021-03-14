@@ -5,7 +5,7 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "narHash": "sha256-STrROTI0cL4PDTkWwmV+IS6+VSTuA4rMOeryu7Cu/F0=",
+        "narHash": "sha256-+YUBuFsPAdYghmKTGvHfCtQ+jUVQ0OhHBuDJSzb9fsA=",
         "path": "/home/henri/travaux/nix-flakes/bookwyrm-flake",
         "type": "path"
       },
