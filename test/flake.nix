@@ -2,7 +2,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
   # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
   # inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
-  inputs.bookwyrm.url = "/home/henri/travaux/nix-flakes/bookwyrm-flake/";
+  inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
 
   outputs = { self, nixpkgs, bookwyrm }: 
    {

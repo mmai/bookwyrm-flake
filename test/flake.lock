@@ -5,12 +5,12 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "narHash": "sha256-bKXB0IARGuow+uguFcig9ajtH4garHcRbXikh2LNsaU=",
-        "path": "/home/henri/travaux/nix-flakes/bookwyrm-flake",
+        "narHash": "sha256-ZVlieybunPjTpzoPBa0W2Fml9p/SmeJ/gih4zd1z0Bw=",
+        "path": "/home/henri/travaux/nix_flakes/bookwyrm-flake",
         "type": "path"
       },
       "original": {
-        "path": "/home/henri/travaux/nix-flakes/bookwyrm-flake",
+        "path": "/home/henri/travaux/nix_flakes/bookwyrm-flake",
         "type": "path"
       }
     },

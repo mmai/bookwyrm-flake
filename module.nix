@@ -458,7 +458,7 @@ in
       systemd.services = 
       let serviceConfig = {
         User = "${cfg.user}";
-        WorkingDirectory = "${pkgs.bookwyrm}/api";
+        WorkingDirectory = "${pkgs.bookwyrm}";
       };
       in {
         bookwyrm-psql-init = mkIf cfg.database.createLocally {
@@ -479,21 +479,12 @@ in
           wantedBy = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
           before   = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
           environment = bookwyrmEnv;
-          serviceConfig = {
-            User = "${cfg.user}";
+          serviceConfig = serviceConfig // {
             Group = "${cfg.group}";
           };
           script = ''
-            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/api/manage.py migrate
-            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/api/manage.py collectstatic --no-input
-            if ! test -e ${cfg.dataDir}/createSuperUser.sh; then
-              echo "#!/bin/sh
-
-              ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/api/manage.py \
-                createsuperuser" > ${cfg.dataDir}/createSuperUser.sh
-              chmod u+x ${cfg.dataDir}/createSuperUser.sh
-              chown -R ${cfg.user}.${cfg.group} ${cfg.dataDir}
-            fi
+            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py migrate
+            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py collectstatic --no-input
             if ! test -e ${cfg.dataDir}/config; then
               mkdir -p ${cfg.dataDir}/config
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/config/.env
