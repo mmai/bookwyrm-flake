@@ -483,8 +483,8 @@ in
             Group = "${cfg.group}";
           };
           script = ''
-            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py migrate
-            ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py collectstatic --no-input
+            ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py migrate
+            ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py collectstatic --no-input
             if ! test -e ${cfg.dataDir}/config; then
               mkdir -p ${cfg.dataDir}/config
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/config/.env
@@ -498,7 +498,7 @@ in
           partOf = [ "bookwyrm.target" ];
 
           serviceConfig = serviceConfig // { 
-            ExecStart = ''${pythonEnv}/bin/gunicorn bookwyrm.asgi:application \
+            ExecStart = ''${pythonEnv}/bin/gunicorn bookwyrm.wsgi:application \
               -w ${toString cfg.webWorkers} \
               -b ${cfg.apiIp}:${toString cfg.apiPort}'';
           };
