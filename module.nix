@@ -378,7 +378,7 @@ in
           }
         ];
 
-        authentication = lib.mkForce ''
+        authentication = ''
           local all postgres               trust
           local ${cfg.database.name} ${cfg.database.user}               trust
           host  ${cfg.database.name} ${cfg.database.user} 127.0.0.1/32 trust
