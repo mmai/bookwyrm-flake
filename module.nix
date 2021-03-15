@@ -416,7 +416,7 @@ in
           "${cfg.hostname}" = {
             enableACME = withSSL;
             forceSSL = cfg.forceSSL;
-            root = "${cfg.dataDir}/front";
+            root = "${cfg.dataDir}";
           # gzip config is nixos nginx recommendedGzipSettings with gzip_types 
           # from funkwhale doc (https://docs.funkwhale.audio/changelog.html#id5)
             extraConfig = ''
