@@ -1,7 +1,9 @@
-update:
+update-nixpkgs:
 	nix flake update --update-input nixpkgs
-tests:
+local:
+	cd container && nix flake update --update-input bookwyrm && cd -
 	sudo nixos-container destroy bookwyrm
-	sudo nixos-container create bookwyrm --flake ./test/
+	sudo nixos-container create bookwyrm --flake ./container/
 	sudo nixos-container start bookwyrm
-	# sudo nixos-container root-login bookwyrm
+root:
+	sudo nixos-container root-login bookwyrm

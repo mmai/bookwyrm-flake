@@ -25,13 +25,15 @@ let
     pkgs.django-rename-app
     pkgs.django-model-utils
   ]);
-  cfg              = config.services.bookwyrm;
+
+  cfg = config.services.bookwyrm;
+
   databasePassword = if (cfg.database.passwordFile != null) 
     then builtins.readFile cfg.database.passwordFile
     else cfg.database.password;
-  redisPassword = if (cfg.redis.passwordFile != null) 
-    then builtins.readFile cfg.redis.passwordFile
-    else cfg.redis.password;
+  # redisPassword = if (cfg.redis.passwordFile != null) 
+  #   then builtins.readFile cfg.redis.passwordFile
+  #   else cfg.redis.password;
   # flowerPassword = if (cfg.flower.passwordFile != null) 
   #   then builtins.readFile cfg.flower.passwordFile
   #   else cfg.flower.password;
@@ -39,36 +41,41 @@ let
     then builtins.readFile cfg.email.passwordFile
     else cfg.email.password;
 
-  bookwyrmEnvironment = [
-    "SECRET_KEY=${cfg.api.djangoSecretKey}"
-    "DEBUG=false"
-    "DOMAIN=${cfg.hostname}"
-    "EMAIL=${cfg.defaultFromEmail}"
-    "OL_URL=https://openlibrary.org"
-    "BOOKWYRM_DATABASE_BACKEND=postgres"
-    "MEDIA_ROOT=${cfg.api.mediaRoot}"
+  bookwyrmEnvironment = {
+    SECRET_KEY="${cfg.api.djangoSecretKey}";
+    DEBUG="false";
+    DOMAIN="${cfg.hostname}";
+    EMAIL="${cfg.defaultFromEmail}";
+    OL_URL="https://openlibrary.org";
+    BOOKWYRM_DATABASE_BACKEND="postgres";
+    MEDIA_ROOT="${cfg.api.mediaRoot}";
+    STATIC_ROOT="${cfg.api.staticRoot}";
 
-    "POSTGRES_PASSWORD=${databasePassword}"
-    "POSTGRES_USER=${cfg.database.user}"
-    "POSTGRES_DB=${cfg.database.name}"
-    "POSTGRES_HOST=${cfg.database.host}"
+    POSTGRES_PASSWORD="${databasePassword}";
+    POSTGRES_USER="${cfg.database.user}";
+    POSTGRES_DB="${cfg.database.name}";
+    POSTGRES_HOST="${cfg.database.host}";
 
-    "REDIS_PASSWORD=${redisPassword}"
-    "CELERY_BROKER=redis://:${redisPassword}@redis:6379/0"
-    "CELERY_RESULT_BACKEND=redis://:${redisPassword}@redis:6379/0"
+    # REDIS_PASSWORD="${redisPassword}"; # no nixos password settings ?
+    REDIS_PASSWORD="-";
+    CELERY_BROKER="redis://localhost:${toString config.services.redis.port}/0";
+    CELERY_RESULT_BACKEND="redis://localhost:${toString config.services.redis.port}/0";
 
-    # "FLOWER_PORT=${flower.port}"
-    # "FLOWER_USER=${flower.user}"
-    # "FLOWER_PASSWORD=${flowerPassword}"
+    # FLOWER_PORT="${flower.port}";
+    # FLOWER_USER="${flower.user}";
+    # FLOWER_PASSWORD="${flowerPassword}";
 
-    "EMAIL_HOST=${cfg.email.host}"
-    "EMAIL_PORT=${toString cfg.email.port}"
-    "EMAIL_HOST_USER=${cfg.email.user}"
-    "EMAIL_HOST_PASSWORD=${emailPassword}"
-    "EMAIL_USE_TLS=true"
-  ];
-  bookwyrmEnvFileData = builtins.concatStringsSep "\n" bookwyrmEnvironment;
-  bookwyrmEnvScriptData = builtins.concatStringsSep " " bookwyrmEnvironment;
+    EMAIL_HOST="${cfg.email.host}";
+    EMAIL_PORT="${toString cfg.email.port}";
+    EMAIL_HOST_USER="${cfg.email.user}";
+    EMAIL_HOST_PASSWORD="${emailPassword}";
+    EMAIL_USE_TLS="true";
+  };
+
+  bookwyrmEnvList = (map (key: key + "=" + (getAttr key bookwyrmEnvironment)) (attrNames bookwyrmEnvironment));
+
+  bookwyrmEnvFileData = builtins.concatStringsSep "\n" bookwyrmEnvList;
+  bookwyrmEnvScriptData = builtins.concatStringsSep " " bookwyrmEnvList;
 
   bookwyrmEnvFile = pkgs.writeText "bookwyrm.env" bookwyrmEnvFileData;
   bookwyrmEnv = {
@@ -93,26 +100,26 @@ in
           description = "Group under which bookwyrm is ran.";
         };
 
-        redis = {
-          password = mkOption {
-            type = types.str;
-            default = "";
-            description = ''
-              The Redis password.
-              Warning: this is stored in cleartext in the Nix store!
-              Use <option>redis.passwordFile</option> instead.
-            '';
-          };
-
-          passwordFile = mkOption {
-            type = types.nullOr types.path;
-            default = null;
-            example = "/run/keys/bookwyrm-redispassword";
-            description = ''
-              A file containing the redis password
-            '';
-          };
-        };
+        # redis = {
+        #   password = mkOption {
+        #     type = types.str;
+        #     default = "";
+        #     description = ''
+        #       The Redis password.
+        #       Warning: this is stored in cleartext in the Nix store!
+        #       Use <option>redis.passwordFile</option> instead.
+        #     '';
+        #   };
+        #
+        #   passwordFile = mkOption {
+        #     type = types.nullOr types.path;
+        #     default = null;
+        #     example = "/run/keys/bookwyrm-redispassword";
+        #     description = ''
+        #       A file containing the redis password
+        #     '';
+        #   };
+        # };
 
         # flower = {
         #   port = mkOption {
@@ -175,7 +182,7 @@ in
 
           password = mkOption {
             type = types.str;
-            default = "";
+            default = "dbpass";
             description = ''
               The password corresponding to <option>database.user</option>.
               Warning: this is stored in cleartext in the Nix store!
@@ -318,7 +325,7 @@ in
         api = {
           mediaRoot = mkOption {
             type = types.str;
-            default = "/srv/bookwyrm/media";
+            default = "/srv/bookwyrm/images";
             description = ''
               Where media files (such as book covers) should be stored on your system.
             '';
@@ -370,6 +377,13 @@ in
             ensurePermissions = { "DATABASE ${cfg.database.name}" = "ALL PRIVILEGES"; };
           }
         ];
+
+        authentication = lib.mkForce ''
+          local all postgres               trust
+          local ${cfg.database.name} ${cfg.database.user}               trust
+          host  ${cfg.database.name} ${cfg.database.user} 127.0.0.1/32 trust
+          host  ${cfg.database.name} ${cfg.database.user} ::1/128      trust
+        '';
       };
 
       services.redis.enable =  true;
@@ -470,15 +484,14 @@ in
             User = "postgres";
             ExecStart = '' ${config.services.postgresql.package}/bin/psql \
               -d ${cfg.database.name}  -c 'CREATE EXTENSION IF NOT EXISTS \
-              "unaccent";CREATE EXTENSION IF NOT EXISTS "citext";' '';
+              "unaccent";CREATE EXTENSION IF NOT EXISTS "pg_trgm";' '';
           };
         };
-        # TODO : test if bookwyrm version has been updated and if so : regenerate .env links and copy front 
         bookwyrm-init = {
           description = "bookwyrm initialization";
           wantedBy = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
           before   = [ "bookwyrm-server.service" "bookwyrm-worker.service" ];
-          environment = bookwyrmEnv;
+          environment = bookwyrmEnvironment;
           serviceConfig = serviceConfig // {
             Group = "${cfg.group}";
           };
@@ -486,6 +499,7 @@ in
             ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py migrate
             ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py collectstatic --no-input
             if ! test -e ${cfg.dataDir}/config; then
+              ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py initdb
               mkdir -p ${cfg.dataDir}/config
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/config/.env
               ln -s ${bookwyrmEnvFile} ${cfg.dataDir}/.env
@@ -502,7 +516,7 @@ in
               -w ${toString cfg.webWorkers} \
               -b ${cfg.apiIp}:${toString cfg.apiPort}'';
           };
-          environment = bookwyrmEnv;
+          environment = bookwyrmEnvironment;
 
           wantedBy = [ "multi-user.target" ];
         };
@@ -515,7 +529,7 @@ in
             RuntimeDirectory = "bookwyrmworker"; 
             ExecStart = "${pythonEnv}/bin/celery -A celerywyrm worker -l info";
           };
-          environment = bookwyrmEnv;
+          environment = bookwyrmEnvironment;
 
           wantedBy = [ "multi-user.target" ];
         };

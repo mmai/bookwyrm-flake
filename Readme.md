@@ -4,55 +4,57 @@ Below is an example of a nixos configuration using this flake :
 
 ```nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
-  inputs.bookwyrm.url = "github:mmai/bookwyrm-nixos";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
+  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
+  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
 
   outputs = { self, nixpkgs, bookwyrm }: 
-  let
-    system = "x86_64-linux";
-  in {
+   {
     nixosConfigurations = {
 
-      server-hostname = nixpkgs.lib.nixosSystem {
-        system = system;
-        modules = [ 
-          nixpkgs.nixosModules.notDetected
-	        bookwyrm.nixosModule
-          ( { config, pkgs, ... }:
-            { imports = [ ./hardware-configuration.nix ];
+      container = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          bookwyrm.nixosModule
+          ( { pkgs, ... }: 
+          let hostname = "bookwyrm";
+          in {
+            boot.isContainer = true;
 
-              nix = {
-                package = pkgs.nixUnstable;
-                extraOptions = ''
-                  experimental-features = nix-command flakes
-                '';
-              };
+            # Let 'nixos-version --json' know about the Git revision
+            # of this flake.
+            system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
 
-              nixpkgs.overlays = [ bookwyrm.overlay ];
+            # Network configuration.
+            networking.useDHCP = false;
+            networking.firewall.allowedTCPPorts = [ 80 443 ];
+            networking.hostName = hostname;
 
-              services.bookwyrm = {
-                enable = true;
-                hostname = "bookwyrm.rhumbs.fr";
-                defaultFromEmail = "noreply@bookwyrm.rhumbs.fr";
-                protocol = "https";
-                # forceSSL = false; # uncomment when LetsEncrypt needs to access "http:" in order to check domain
-                api = {
+            nixpkgs.overlays = [ bookwyrm.overlay ];
+
+            services.bookwyrm = {
+              enable = true;
+              hostname = hostname;
+              defaultFromEmail = "noreply@funkwhale.rhumbs.fr";
+              protocol = "http"; # no ssl for container
+              forceSSL = false; # uncomment when LetsEncrypt needs to access "http:" in order to check domain
+              api = {
                   # Generate one using `openssl rand -base64 45`, for example
                   djangoSecretKey = "yoursecretkey";
-                };
               };
 
-              security.acme = {
-                email = "your@email.com";
-                acceptTerms = true;
+              email = {
+                host = "smtp.gmail.com";
+                user = "mailuser";
+                password = "mailpass";
               };
 
-              # Overrides default 30M
-              services.nginx.clientMaxBodySize = "100m";
+            };
 
-              services.fail2ban.enable = true;
-              networking.firewall.allowedTCPPorts = [ 80 443 ];
-            })
+            # Overrides default 30M
+            services.nginx.clientMaxBodySize = "100m";
+
+          })
         ];
       };
 

@@ -1,8 +1,8 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
   # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
-  # inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
-  inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
+  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
+  # inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
 
   outputs = { self, nixpkgs, bookwyrm }: 
    {
@@ -23,7 +23,7 @@
 
             # Network configuration.
             networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 ];
+            networking.firewall.allowedTCPPorts = [ 80 443 ];
             networking.hostName = hostname;
 
             nixpkgs.overlays = [ bookwyrm.overlay ];
@@ -32,7 +32,7 @@
               enable = true;
               hostname = hostname;
               defaultFromEmail = "noreply@funkwhale.rhumbs.fr";
-              protocol = "http"; # no ssl for virtualbox
+              protocol = "http"; # no ssl for container
               forceSSL = false; # uncomment when LetsEncrypt needs to access "http:" in order to check domain
               api = {
                   # Generate one using `openssl rand -base64 45`, for example
@@ -41,8 +41,8 @@
 
               email = {
                 host = "smtp.gmail.com";
-                user = "henri.bourcereau";
-                password = "ooooo";
+                user = "-";
+                password = "-";
               };
 
             };
