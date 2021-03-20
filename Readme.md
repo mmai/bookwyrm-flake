@@ -4,9 +4,8 @@ Below is an example of a nixos configuration using this flake :
 
 ```nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
-  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
-  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
+  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake/nixos-20.09";
 
   outputs = { self, nixpkgs, bookwyrm }: 
    {
