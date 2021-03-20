@@ -1,8 +1,7 @@
 {
   description = "Bookwyrm";
 
-  # inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-20.09;
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-unstable; # for django_3
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-20.09;
 
   outputs = { self, nixpkgs }:
   let
@@ -104,6 +103,44 @@
         maintainers = with maintainers; [ mmai ];
       };
     });
+
+    # copied from unstable nixos branch
+    django_3 = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
+      pname = "Django";
+      version = "3.1.7";
+
+      disabled = pythonOlder "3.7";
+
+      src = fetchPypi {
+        inherit pname version;
+        sha256 = "32ce792ee9b6a0cbbec340123e229ac9f765dff8c2a4ae9247a14b2ba3a365a7";
+      };
+
+      patches = lib.optional withGdal
+      (substituteAll {
+        src = ./django_3_set_geos_gdal_lib.patch;
+        geos = geos;
+        gdal = gdal;
+        extension = stdenv.hostPlatform.extensions.sharedLibrary;
+      });
+
+      propagatedBuildInputs = [
+        asgiref
+        pytz
+        sqlparse
+      ];
+
+      # too complicated to setup
+      doCheck = false;
+
+      meta = with lib; {
+        description = "A high-level Python Web framework";
+        homepage = "https://www.djangoproject.com/";
+        license = licenses.bsd3;
+        maintainers = with maintainers; [ georgewhewell lsix ];
+      };
+    });
+
   };
 
     packages = forAllSystems (system: {
@@ -112,6 +149,7 @@
       inherit (nixpkgsFor.${system}) environs;
       inherit (nixpkgsFor.${system}) django-rename-app;
       inherit (nixpkgsFor.${system}) django-model-utils;
+      inherit (nixpkgsFor.${system}) django_3;
     });
 
     defaultPackage = forAllSystems (system: self.packages.${system}.bookwyrm);

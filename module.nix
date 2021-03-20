@@ -5,7 +5,7 @@ with lib;
 let
   pythonEnv = (pkgs.python3.override {
     packageOverrides = self: super: rec {
-      django = self.django_3;
+      django = pkgs.django_3;
     };
   }).withPackages (ps: [
     ps.celery
