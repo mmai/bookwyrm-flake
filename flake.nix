@@ -1,8 +1,8 @@
 {
   description = "Bookwyrm";
 
-  # inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-20.09;
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-unstable; # for django_3
+  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.05;
+  #inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-unstable;
 
   outputs = { self, nixpkgs }:
   let
@@ -47,44 +47,44 @@
 
     # ------- Python dependencies missing from nixos -----------
 
-    django-model-utils = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
-      pname = "django-model-utils";
-      version = "4.1.1";
-
-      src = fetchPypi {
-        inherit pname version;
-        sha256 = "eb5dd05ef7d7ce6bc79cae54ea7c4a221f6f81e2aad7722933aee66489e7264b"; #tar.gz
-      };
-      propagatedBuildInputs = [ django_3 ];
-      buildInputs = [ tox sphinx twine freezegun ];
-      doCheck = false;
-
-      meta = with lib; {
-        description = "Django model mixins and utilities";
-        homepage = "https://github.com/jazzband/django-model-utils";
-        license = licenses.bsd3;
-        maintainers = with maintainers; [ mmai ];
-      };
-    });
-
-    environs = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
-      pname = "environs";
-      version = "9.3.1";
-
-      src = fetchPypi {
-        inherit pname version;
-        sha256 = "3f6def554abb5455141b540e6e0b72fda3853404f2b0d31658aab1bf95410db3"; #tar.gz
-      };
-      propagatedBuildInputs = [ marshmallow python-dotenv dj-database-url dj-email-url django-cache-url ];
-      # doCheck = false;
-
-      meta = with lib; {
-        description = "Simplified environment variable parsing";
-        homepage = "https://github.com/sloria/environs";
-        license = licenses.mit;
-        maintainers = with maintainers; [ mmai ];
-      };
-    });
+    # django-model-utils = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
+    #   pname = "django-model-utils";
+    #   version = "4.1.1";
+    #
+    #   src = fetchPypi {
+    #     inherit pname version;
+    #     sha256 = "eb5dd05ef7d7ce6bc79cae54ea7c4a221f6f81e2aad7722933aee66489e7264b"; #tar.gz
+    #   };
+    #   propagatedBuildInputs = [ django_3 ];
+    #   buildInputs = [ tox sphinx twine freezegun ];
+    #   doCheck = false;
+    #
+    #   meta = with lib; {
+    #     description = "Django model mixins and utilities";
+    #     homepage = "https://github.com/jazzband/django-model-utils";
+    #     license = licenses.bsd3;
+    #     maintainers = with maintainers; [ mmai ];
+    #   };
+    # });
+    #
+    # environs = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
+    #   pname = "environs";
+    #   version = "9.3.1";
+    #
+    #   src = fetchPypi {
+    #     inherit pname version;
+    #     sha256 = "3f6def554abb5455141b540e6e0b72fda3853404f2b0d31658aab1bf95410db3"; #tar.gz
+    #   };
+    #   propagatedBuildInputs = [ marshmallow python-dotenv dj-database-url dj-email-url django-cache-url ];
+    #   # doCheck = false;
+    #
+    #   meta = with lib; {
+    #     description = "Simplified environment variable parsing";
+    #     homepage = "https://github.com/sloria/environs";
+    #     license = licenses.mit;
+    #     maintainers = with maintainers; [ mmai ];
+    #   };
+    # });
 
     django-rename-app = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
       pname = "django_rename_app";
