@@ -19,12 +19,12 @@
     overlay = final: prev: {
       bookwyrm = with final; (stdenv.mkDerivation {
         name = "bookwyrm";
-        version = "0.0.20210315";
+        version = "v0.6.3";
         src = fetchFromGitHub {
           owner = "mouse-reeve";
           repo = "bookwyrm";
-          rev = "e8b89eee73e6b27c50ab562bfc6b9a78007020ae";
-          sha256 = "bCn7YM9WcOTm0y0pTjmNUsohQ8PM7tpgtNmPrAN4d5k=";
+          rev = "6400a8e23408158fe3d253b8ce9578d04968048a";
+          sha256 = "bCn6YM9WcOTm0y0pTjmNUsohQ8PM7tpgtNmPrAN4d5k=";
         };
 
         installPhase = ''
@@ -47,63 +47,44 @@
 
     # ------- Python dependencies missing from nixos -----------
 
-    # django-model-utils = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
-    #   pname = "django-model-utils";
-    #   version = "4.1.1";
-    #
-    #   src = fetchPypi {
-    #     inherit pname version;
-    #     sha256 = "eb5dd05ef7d7ce6bc79cae54ea7c4a221f6f81e2aad7722933aee66489e7264b"; #tar.gz
-    #   };
-    #   propagatedBuildInputs = [ django_3 ];
-    #   buildInputs = [ tox sphinx twine freezegun ];
-    #   doCheck = false;
-    #
-    #   meta = with lib; {
-    #     description = "Django model mixins and utilities";
-    #     homepage = "https://github.com/jazzband/django-model-utils";
-    #     license = licenses.bsd3;
-    #     maintainers = with maintainers; [ mmai ];
-    #   };
-    # });
-    #
-    # environs = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
-    #   pname = "environs";
-    #   version = "9.3.1";
-    #
-    #   src = fetchPypi {
-    #     inherit pname version;
-    #     sha256 = "3f6def554abb5455141b540e6e0b72fda3853404f2b0d31658aab1bf95410db3"; #tar.gz
-    #   };
-    #   propagatedBuildInputs = [ marshmallow python-dotenv dj-database-url dj-email-url django-cache-url ];
-    #   # doCheck = false;
-    #
-    #   meta = with lib; {
-    #     description = "Simplified environment variable parsing";
-    #     homepage = "https://github.com/sloria/environs";
-    #     license = licenses.mit;
-    #     maintainers = with maintainers; [ mmai ];
-    #   };
-    # });
-
-    django-rename-app = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
-      pname = "django_rename_app";
-      version = "0.1.2";
+    django-imagekit = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
+      pname = "django-imagekit";
+      version = "4.1.0";
 
       src = fetchPypi {
         inherit pname version;
-        sha256 = "d59990f11e0e5c73fff62122daf4dbd52185dc1e050e3b41fd7954f579fca056"; #tar.gz
+        sha256 = "e559aeaae43a33b34f87631a9fa5696455e4451ffa738a42635fde442fedac5c"; #tar.gz
       };
-      propagatedBuildInputs = [ django_3 ];
+      propagatedBuildInputs = [ django ];
       # doCheck = false;
 
       meta = with lib; {
-        description = "A Django Management Command to rename existing Django Applications";
-        homepage = "https://github.com/odwyersoftware/django-rename-app";
+        description = "Automated image processing for Django models";
+        homepage = "http://github.com/matthewwithanm/django-imagekit/";
+        license = licenses.bsd;
+        maintainers = with maintainers; [ mmai ];
+      };
+    });
+
+    django-sass-processor = with final; with pkgs.python3.pkgs; ( buildPythonPackage rec {
+      pname = "django-sass-processor";
+      version = "1.2.2";
+
+      src = fetchPypi {
+        inherit pname version;
+        sha256 = "f6098c181cc95a21593df6bb502791e32015615222803de216fdcc8bb42c0f77"; #tar.gz
+      };
+      propagatedBuildInputs = [ django ];
+      # doCheck = false;
+
+      meta = with lib; {
+        description = "SASS processor to compile SCSS files into *.css, while rendering, or offline";
+        homepage = "https://github.com/jrief/django-sass-processor";
         license = licenses.mit;
         maintainers = with maintainers; [ mmai ];
       };
     });
+
   };
 
     packages = forAllSystems (system: {

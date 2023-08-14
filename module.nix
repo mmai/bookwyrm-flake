@@ -5,25 +5,47 @@ with lib;
 let
   pythonEnv = (pkgs.python3.override {
     packageOverrides = self: super: rec {
-      django = self.django_3;
+      # django = self.django_3;
     };
   }).withPackages (ps: [
+    ps.aiohttp
+    ps.bleach # nix = 6.0.0 / upstream bookwyrm = 5.0.1
     ps.celery
-    # ps.flower
+    ps.colorthief
     ps.django
-    ps.markdown
+    ps.django-celery-beat # 2.5.0 / 2.4.0
+    ps.django-compressor
+    pkgs.django-imagekit # custom  package from flake.nix
+    ps.django-model-utils
+    pkgs.django-sass-processor # custom  package from flake.nix
+    ps.django-csp
+    ps.environs
+    ps.flower
+    ps.gunicorn # 20.1.0 / 20.0.4
+    ps.libsass
+    ps.markdown # 3.4.3 /  3.4.1
+    ps.packaging # 23.0 / 21.3
     ps.pillow
     ps.psycopg2
+    ps.pycryptodome # 3.17.0 / 3.16.0
+    ps.python-dateutil
     ps.redis
-    ps.requests
-    ps.gunicorn
-    ps.pycryptodome
-    ps.dateutil
-    ps.responses
-
-    pkgs.environs
-    pkgs.django-rename-app
-    pkgs.django-model-utils
+    ps.requests # 2.29.0 / 2.31.0
+    ps.responses # 0.23.1 / 0.22.0
+    ps.pytz
+    ps.boto3
+    ps.django-storages
+    ps.django-redis
+    ps.protobuf # 4.21.12 / 3.20
+    ps.pyotp
+    ps.qrcode # 7.4.2 / 7.3.1
+# todo ------------------ 
+# opentelemetry-api==1.16.0
+# opentelemetry-exporter-otlp-proto-grpc==1.16.0
+# opentelemetry-instrumentation-celery==0.37b0
+# opentelemetry-instrumentation-django==0.37b0
+# opentelemetry-instrumentation-psycopg2==0.37b0
+# opentelemetry-sdk==1.16.0
   ]);
 
   cfg = config.services.bookwyrm;
