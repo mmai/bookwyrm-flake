@@ -5,43 +5,44 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "narHash": "sha256-XorfJW6G4nRMB5xrNd5Zn3jEAlVw+073qpDkJ1MSoTw=",
-        "path": "/home/henri/travaux/nix_flakes/bookwyrm-flake",
-        "type": "path"
+        "lastModified": 1692116276,
+        "narHash": "sha256-v8oBu75OsNHCc/TSf1o0wNmiYDMpAGx8ARaWQ7bF8h4=",
+        "type": "git",
+        "url": "file:///home/henri/travaux/nix_flakes/bookwyrm-flake"
       },
       "original": {
-        "path": "/home/henri/travaux/nix_flakes/bookwyrm-flake",
-        "type": "path"
+        "type": "git",
+        "url": "file:///home/henri/travaux/nix_flakes/bookwyrm-flake"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1615532953,
-        "narHash": "sha256-SWpaGjrp/INzorEqMz3HLi6Uuk9I0KAn4YS8B4n3q5g=",
+        "lastModified": 1692025715,
+        "narHash": "sha256-tsRiiopGT7HA8d/cuk5xYBRXgdnnvD+JhUGUe3x7vmY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "916ee862e87ac5ee2439f2fb7856386b4dc906ae",
+        "rev": "09a137528c3aea3780720d19f99cd706f52c3823",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
+        "ref": "nixos-23.05",
         "repo": "nixpkgs",
         "type": "github"
       }
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1615532953,
-        "narHash": "sha256-SWpaGjrp/INzorEqMz3HLi6Uuk9I0KAn4YS8B4n3q5g=",
+        "lastModified": 1691950488,
+        "narHash": "sha256-iUNEeudc4dGjx+HsHccnGiuZUVE/nhjXuQ1DVCsHIUY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "916ee862e87ac5ee2439f2fb7856386b4dc906ae",
+        "rev": "720e61ed8de116eec48d6baea1d54469b536b985",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
+        "ref": "nixos-23.05",
         "repo": "nixpkgs",
         "type": "github"
       }

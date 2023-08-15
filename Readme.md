@@ -4,8 +4,7 @@ Below is an example of a nixos configuration using this flake :
 
 ```nix
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
-  # inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
   inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
 
   outputs = { self, nixpkgs, bookwyrm }: 
@@ -24,6 +23,7 @@ Below is an example of a nixos configuration using this flake :
             # Let 'nixos-version --json' know about the Git revision
             # of this flake.
             system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+            system.stateVersion = "23.05";
 
             # Network configuration.
             networking.useDHCP = false;
@@ -44,11 +44,15 @@ Below is an example of a nixos configuration using this flake :
               };
 
               email = {
-                host = "smtp.gmail.com";
-                user = "mailuser";
-                password = "mailpass";
+                host = "smtp.xxxx.com";
+                user = "-";
+                password = "-";
               };
 
+              flowerArgs = [ "--port=8888" ];
+
+              celeryRedis.createLocally = true;
+              activityRedis.createLocally = true;
             };
 
             # Overrides default 30M
@@ -62,3 +66,16 @@ Below is an example of a nixos configuration using this flake :
   };
 }
 ```
+
+## Test on a local container
+
+- start the bookwyrm services in a container on the local machine : `make local`
+- wait 30s for the bootstraping of bookwyrm services
+- connect to the local service: 
+Get the ip address of the container : `machinectl`,  which output something like this :
+```
+MACHINE   CLASS     SERVICE        OS    VERSION ADDRESSES
+bookwyrm container systemd-nspawn nixos 23.05   10.233.2.2…
+```
+
+Then browse to the ip  `firefox http://10.233.2.2`

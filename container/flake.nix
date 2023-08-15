@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # for django_3
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
   inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
   # inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
 
@@ -19,6 +19,7 @@
             # Let 'nixos-version --json' know about the Git revision
             # of this flake.
             system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+            system.stateVersion = "23.05";
 
             # Network configuration.
             networking.useDHCP = false;
@@ -44,6 +45,10 @@
                 password = "-";
               };
 
+              flowerArgs = [ "--port=8888" ];
+
+              celeryRedis.createLocally = true;
+              activityRedis.createLocally = true;
             };
 
             # Overrides default 30M

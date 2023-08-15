@@ -24,12 +24,17 @@
           owner = "mouse-reeve";
           repo = "bookwyrm";
           rev = "21f65cac58ec9decf069a2c9689768aaa082d2d7";
-          sha256 = "SEXdCMkyn1ljfv54ldyNvDxFEyH7Ye2L3FPEFv+zy1E=";
+          sha256 = "lDrMBezOCiDnXQnGrSzz1bUIf90AbSVbADhpH10x5ZQ=";
         };
 
         installPhase = ''
             mkdir $out
             cp -R ./* $out
+        '';
+
+        fixupPhase = ''
+          substituteInPlace $out/bookwyrm/management/commands/compile_themes.py \
+            --replace 'settings.BASE_DIR, "bookwyrm", "static"' "os.environ['STATIC_ROOT']"
         '';
 
         meta = with lib; {
