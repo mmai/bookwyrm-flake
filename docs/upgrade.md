@@ -8,4 +8,9 @@ Get last Bbookwyrm release source code in order to compare with previous release
 ./fetchUpstreamCode.sh v0.6.3
 ```
 Packages : compare requirements.txt
-Module : compare bwdev / docker-compose.yml
+Module : compare 
+- bwdev 
+- docker-compose.yml
+- nginx
+- bookwyrm/settings.py (environment variables)
+
