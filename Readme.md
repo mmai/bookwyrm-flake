@@ -71,11 +71,12 @@ Below is an example of a nixos configuration using this flake :
 
 - start the bookwyrm services in a container on the local machine : `make local`
 - wait 30s for the bootstraping of bookwyrm services
+- get the admin code with `sudo nixos-container run bookwyrm -- bookwyrm-manage admin_code
 - connect to the local service: 
 Get the ip address of the container : `machinectl`,  which output something like this :
 ```
 MACHINE   CLASS     SERVICE        OS    VERSION ADDRESSES
-bookwyrm container systemd-nspawn nixos 23.05   10.233.2.2…
+bookwyrm container systemd-nspawn nixos 23.05   10.233.5.2…
 ```
 
-Then browse to the ip  `firefox http://10.233.2.2`
+Then browse to the ip  `firefox http://10.233.5.2`

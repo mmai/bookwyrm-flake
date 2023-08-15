@@ -103,6 +103,11 @@ let
   bookwyrmEnv = {
     ENV_FILE = "${bookwyrmEnvFile}";
   };
+
+
+ bookwyrmManageScript = (pkgs.writeScriptBin "bookwyrm-manage" ''
+     ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py "$@"
+  '');
 in 
   {
 
@@ -620,6 +625,7 @@ in
 
       };
 
+      environment.systemPackages = [ bookwyrmManageScript ];
     };
 
     meta = {
