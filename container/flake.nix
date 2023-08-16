@@ -26,14 +26,22 @@
             networking.firewall.allowedTCPPorts = [ 80 443 ];
             networking.hostName = hostname;
 
+            # We use a self-signed SSL certificate for the container version
+            security.acme = {
+              acceptTerms = true;
+              defaults = {
+                server = "https://127.0.0.1";
+                email = "email@email.fr";
+              };
+              preliminarySelfsigned = true;
+            };
+
             nixpkgs.overlays = [ bookwyrm.overlay ];
 
             services.bookwyrm = {
               enable = true;
-              hostname = hostname;
+              hostname = "bookwyrm.local";
               defaultFromEmail = "noreply@funkwhale.rhumbs.fr";
-              protocol = "http"; # no ssl for container
-              forceSSL = false; # uncomment when LetsEncrypt needs to access "http:" in order to check domain
               api = {
                   # Generate one using `openssl rand -base64 45`, for example
                   djangoSecretKey = "yoursecretkey";

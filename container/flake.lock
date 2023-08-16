@@ -5,8 +5,8 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1692122622,
-        "narHash": "sha256-JUd++5NFdb3gtMA7herQmQ+l8yIjhNQO6CpxVHrQ28s=",
+        "lastModified": 1692126819,
+        "narHash": "sha256-/88Hqx6yMD67MbyKVpZ/p04nhHTymUx7Sj04iztJECA=",
         "type": "git",
         "url": "file:///home/henri/travaux/nix_flakes/bookwyrm-flake"
       },
