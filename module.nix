@@ -84,13 +84,12 @@ let
     EMAIL_HOST_USER="${cfg.email.user}";
     EMAIL_HOST_PASSWORD="${emailPassword}";
     EMAIL_USE_TLS="true";
+
+    REDIS_ACTIVITY_PORT="${toString cfg.activityRedis.port}";
+    REDIS_BROKER_PORT="${toString cfg.celeryRedis.port}";
   } 
-  // (if cfg.activityRedis.port != null then { REDIS_ACTIVITY_PORT="${toString cfg.activityRedis.port}"; } else {} )
   // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST="${toString cfg.activityRedis.host}"; } else {} )
-  // (if cfg.activityRedis.unixSocket != null then { REDIS_ACTIVITY_SOCKET="${toString cfg.activityRedis.unixSocket}"; } else {} )
-  // (if cfg.celeryRedis.port != null then { REDIS_BROKER_PORT="${toString cfg.celeryRedis.port}"; } else {} )
   // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST="${toString cfg.celeryRedis.host}"; } else {} )
-  // (if cfg.celeryRedis.unixSocket != null then { REDIS_BROKER_SOCKET="${toString cfg.celeryRedis.unixSocket}"; } else {} )
   ;
 
   redisCreateLocally = cfg.celeryRedis.createLocally || cfg.activityRedis.createLocally;
@@ -143,19 +142,9 @@ in
           }; 
 
           port = mkOption {
-            type = types.nullOr types.int;
-            default = null;
+            type = types.int;
+            default = 6379;
             description = "Activity Redis port.";
-          };
-
-          unixSocket = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "/run/redis/activity-redis.sock";
-            description = ''
-              Unix socket to connect to for activity Redis. When set, the host and
-              port option will be ignored.
-              '';
           };
         };
 
@@ -174,19 +163,9 @@ in
           }; 
 
           port = mkOption {
-            type = types.nullOr types.int;
-            default = null;
+            type = types.int;
+            default = 6380;
             description = "Activity Redis port.";
-          };
-
-          unixSocket = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "/run/redis/redis.sock";
-            description = ''
-              Unix socket to connect to for celery Redis. When set, the host and
-              port option will be ignored.
-              '';
           };
         };
 
@@ -405,14 +384,6 @@ in
         { assertion = cfg.database.createLocally -> cfg.database.host == "localhost";
           message = "services.bookwyrm.database.host must be set to localhost if services.bookwyrm.database.createLocally is set to true";
         }
-
-        # taken from https://git.underscore.world/d/bookwyrm/src/branch/nix/nix/moduleInner.nix
-        { assertion = cfg.activityRedis.unixSocket != null || (cfg.activityRedis.host != null && cfg.activityRedis.port != null);
-          message = "services.bookwyrm.activityRedis needs to have either a unixSocket defined, or both a host and a port defined.";
-        }
-        { assertion = cfg.celeryRedis.unixSocket != null || (cfg.celeryRedis.host != null && cfg.celeryRedis.port != null);
-          message = "services.bookwyrm.celeryRedis needs to have either a unixSocket defined, or both a host and a port defined.";
-        }
       ];
 
       users.users.bookwyrm = mkIf (cfg.user == "bookwyrm") { group = cfg.group; isSystemUser = true; };
@@ -438,16 +409,14 @@ in
       services.redis.servers = optionalAttrs cfg.activityRedis.createLocally {
         bookwyrm-activity = {
           enable = true;
+          port = cfg.activityRedis.port;
         };
       } // optionalAttrs cfg.celeryRedis.createLocally {
         bookwyrm-celery = {
           enable = true;
+          port = cfg.celeryRedis.port;
         };
       };
-
-      services.bookwyrm.activityRedis.unixSocket = mkIf cfg.activityRedis.createLocally config.services.redis.servers.bookwyrm-activity.unixSocket;
-      services.bookwyrm.celeryRedis.unixSocket =  mkIf cfg.celeryRedis.createLocally config.services.redis.servers.bookwyrm-celery.unixSocket;
-
 
       services.nginx = {
         enable = true;
@@ -607,7 +576,6 @@ in
           description = "Flower monitoring tool for bookwyrm-celery";
           after = [
             "network.target"
-            "redis.service"
             "bookwyrm-celery.service"
           ] ++ optional redisCreateLocally "redis.service";
           bindsTo = optionals redisCreateLocally [

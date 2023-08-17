@@ -1,10 +1,8 @@
 # Bookwyrm flake
 
+WIP. still not working 
+
 For an other Bookwyrm flake, see https://git.underscore.world/d/bookwyrm.
-
-WIP. redis not working 
-
-todo : patch with https://git.underscore.world/d/bookwyrm/commit/1ecdf245d281a96eff5153573d198e225abfc236
 
 Below is an example of a nixos configuration using this flake :
 
@@ -78,10 +76,4 @@ Below is an example of a nixos configuration using this flake :
 - start the bookwyrm services in a container on the local machine : `make local`
 - wait 30s for the bootstraping of bookwyrm services
 - get the admin code with `sudo nixos-container run bookwyrm -- bookwyrm-manage admin_code`
-- connect to the local service: 
-Get the ip address of the container : `machinectl`,  which output something like this :
-```
-MACHINE   CLASS     SERVICE        OS    VERSION ADDRESSES
-bookwyrm container systemd-nspawn nixos 23.05   10.233.5.2…
-```
-Add a entry `10.233.5.2 bookwyrm.local` to your /etc/hosts file, then browse to `firefox https://bookwyrm.local`
+- connect to the local service: browse to `firefox https://bookwyrm` and accept the auto-signed ssl certificate.

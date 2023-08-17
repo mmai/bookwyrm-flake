@@ -40,7 +40,7 @@
 
             services.bookwyrm = {
               enable = true;
-              hostname = "bookwyrm.local";
+              hostname = hostname;
               defaultFromEmail = "noreply@funkwhale.rhumbs.fr";
               api = {
                   # Generate one using `openssl rand -base64 45`, for example
