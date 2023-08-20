@@ -1,10 +1,6 @@
 # Bookwyrm flake
 
-WIP. still not working 
-
-For an other Bookwyrm flake, see https://git.underscore.world/d/bookwyrm.
-
-Below is an example of a nixos configuration using this flake :
+Below is an example of a nixos configuration using this flake, you can also take a look at the _container/flake.nix_ file :
 
 ```nix
 {
@@ -77,3 +73,8 @@ Below is an example of a nixos configuration using this flake :
 - wait 30s for the bootstraping of bookwyrm services
 - get the admin code with `sudo nixos-container run bookwyrm -- bookwyrm-manage admin_code`
 - connect to the local service: browse to `firefox https://bookwyrm` and accept the auto-signed ssl certificate.
+
+## Alternatives
+
+For an other Bookwyrm flake, see https://git.underscore.world/d/bookwyrm.
+
