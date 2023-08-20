@@ -31,7 +31,7 @@ Below is an example of a nixos configuration using this flake :
 
             # Network configuration.
             networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 443 ];
+            networking.firewall.allowedTCPPorts = [ 80 443 ]; # add 8888 to access flower
             networking.hostName = hostname;
 
             nixpkgs.overlays = [ bookwyrm.overlay ];

@@ -7,3 +7,5 @@ local:
 	sudo nixos-container start bookwyrm
 root:
 	sudo nixos-container root-login bookwyrm
+admin_code:
+	sudo nixos-container run bookwyrm -- bookwyrm-manage admin_code

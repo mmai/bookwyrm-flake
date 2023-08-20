@@ -72,13 +72,6 @@ let
     POSTGRES_DB="${cfg.database.name}";
     POSTGRES_HOST="${cfg.database.host}";
 
-    # CELERY_BROKER="redis://localhost:${toString config.services.redis.port}/0";
-    # CELERY_RESULT_BACKEND="redis://localhost:${toString config.services.redis.port}/0";
-
-    # FLOWER_PORT="${flower.port}";
-    # FLOWER_USER="${flower.user}";
-    # FLOWER_PASSWORD="${flowerPassword}";
-
     EMAIL_HOST="${cfg.email.host}";
     EMAIL_PORT="${toString cfg.email.port}";
     EMAIL_HOST_USER="${cfg.email.user}";
@@ -88,8 +81,8 @@ let
     REDIS_ACTIVITY_PORT="${toString cfg.activityRedis.port}";
     REDIS_BROKER_PORT="${toString cfg.celeryRedis.port}";
   } 
-  // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST="${toString cfg.activityRedis.host}"; } else {} )
-  // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST="${toString cfg.celeryRedis.host}"; } else {} )
+  // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST="${toString cfg.activityRedis.host}"; } else { REDIS_ACTIVITY_HOST="localhost"; } )
+  // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST="${toString cfg.celeryRedis.host}"; } else { REDIS_BROKER_HOST="localhost"; } )
   ;
 
   redisCreateLocally = cfg.celeryRedis.createLocally || cfg.activityRedis.createLocally;
@@ -126,7 +119,6 @@ in
           description = "Group under which bookwyrm is ran.";
         };
 
-        # taken from https://git.underscore.world/d/bookwyrm/src/branch/nix/nix/moduleInner.nix
         activityRedis = {
           createLocally = mkOption {
             type = types.bool;
@@ -134,10 +126,9 @@ in
             description = "Ensure Redis is running locally and use it.";
           };
 
-          # note that there are assertions to prevent three of these being null
           host = mkOption {
             type = types.nullOr types.str; 
-            default = null;
+            default = "localhost";
             description = "Activity Redis host address.";
           }; 
 
@@ -155,10 +146,9 @@ in
             description = "Ensure Redis is running locally and use it.";
           };
 
-          # note that there are assertions to prevent all three of these being null
           host = mkOption {
             type = types.nullOr types.str; 
-            default = null;
+            default = "localhost";
             description = "Activity Redis host address.";
           }; 
 
@@ -406,12 +396,12 @@ in
         '';
       };
 
-      services.redis.servers = optionalAttrs cfg.activityRedis.createLocally {
+      services.redis.servers = optionalAttrs cfg.activityRedis.createLocally rec {
         bookwyrm-activity = {
           enable = true;
           port = cfg.activityRedis.port;
         };
-      } // optionalAttrs cfg.celeryRedis.createLocally {
+      } // optionalAttrs cfg.celeryRedis.createLocally rec {
         bookwyrm-celery = {
           enable = true;
           port = cfg.celeryRedis.port;
@@ -496,9 +486,9 @@ in
       ];
 
       systemd.targets.bookwyrm = {
-        description = "bookwyrm";
-        wants = ["bookwyrm-server.service" "bookwyrm-celery.service"];
-      }; 
+        description = "Target for all bookwyrm services";
+        wantedBy = [ "multi-user.target" ];
+      };
 
       systemd.services = 
       let serviceConfig = {
@@ -543,12 +533,18 @@ in
         bookwyrm-server = {
           description = "bookwyrm application server";
           partOf = [ "bookwyrm.target" ];
-
+          after = [ 
+            "network.target"
+            "postgresql.service"
+            "bookwyrm-celery.service"
+          ];
           serviceConfig = serviceConfig // {
             ExecStart = ''${pythonEnv}/bin/gunicorn bookwyrm.wsgi:application \
               -w ${toString cfg.webWorkers} \
               -b ${cfg.apiIp}:${toString cfg.apiPort}'';
           };
+              # --timeout 1800 \
+              # --log-level=debug \
           environment = bookwyrmEnvironment;
 
           wantedBy = [ "multi-user.target" ];
@@ -556,14 +552,14 @@ in
 
         bookwyrm-celery = {
           description = "Celery service for bookwyrm.";
+          partOf = [ "bookwyrm.target" ];
+          wantedBy = [ "bookwyrm.target" ];
           after = [
             "network.target"
-          ] ++ optional redisCreateLocally "redis.service";
+          ] ++ optional redisCreateLocally "redis-bookwyrm-celery.service";
           bindsTo = optionals redisCreateLocally [
-            "redis.service"
+            "redis-bookwyrm-celery.service"
           ];
-          wantedBy = [ "bookwyrm.target" ];
-          partOf = [ "bookwyrm.target" ];
 
           serviceConfig = serviceConfig // {
             RuntimeDirectory = "bookwyrmworker";
@@ -574,15 +570,15 @@ in
 
         bookwyrm-flower = {
           description = "Flower monitoring tool for bookwyrm-celery";
+          wantedBy = [ "bookwyrm.target" ];
+          partOf = [ "bookwyrm.target" ];
           after = [
             "network.target"
             "bookwyrm-celery.service"
-          ] ++ optional redisCreateLocally "redis.service";
+          ] ++ optional redisCreateLocally "redis-bookwyrm-celery.service";
           bindsTo = optionals redisCreateLocally [
-            "redis.service"
+            "redis-bookwyrm-celery.service"
           ];
-          wantedBy = [ "bookwyrm.target" ];
-          partOf = [ "bookwyrm.target" ];
           environment = bookwyrmEnvironment;
 
           serviceConfig = serviceConfig // {

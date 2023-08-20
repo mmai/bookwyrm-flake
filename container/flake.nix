@@ -23,7 +23,7 @@
 
             # Network configuration.
             networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 443 ];
+            networking.firewall.allowedTCPPorts = [ 80 443 8888 ]; # 8888 : flower
             networking.hostName = hostname;
 
             # We use a self-signed SSL certificate for the container version

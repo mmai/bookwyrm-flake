@@ -2,6 +2,8 @@
 
 ## bugs
 
+old ?
+
 ```
 [2021-03-20 14:33:34,887: ERROR/MainProcess] Received unregistered task of type 'bookwyrm.models.activitypub_mixin.broadcast_task'.
 mars 20 15:33:34 activitypub celery[781]: The message has been ignored and discarded.
@@ -19,5 +21,4 @@ mars 20 15:33:34 activitypub celery[781]:     strategy = strategies[type_]
 
 ## base system
 
-* configure flower
 * configure backups
