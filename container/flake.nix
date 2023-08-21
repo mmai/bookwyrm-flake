@@ -1,7 +1,7 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
-  # inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
-  inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
+  inputs.bookwyrm.url = "github:mmai/bookwyrm-flake";
+  # inputs.bookwyrm.url = "/home/henri/travaux/nix_flakes/bookwyrm-flake/";
 
   outputs = { self, nixpkgs, bookwyrm }: 
    {

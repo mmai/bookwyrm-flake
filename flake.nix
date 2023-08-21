@@ -19,12 +19,12 @@
     overlay = final: prev: {
       bookwyrm = with final; (stdenv.mkDerivation {
         name = "bookwyrm";
-        version = "v0.6.4";
+        version = "v0.6.5";
         src = fetchFromGitHub {
           owner = "mouse-reeve";
           repo = "bookwyrm";
-          rev = "21f65cac58ec9decf069a2c9689768aaa082d2d7";
-          sha256 = "lDrMBezOCiDnXQnGrSzz1bUIf90AbSVbADhpH10x5ZQ=";
+          rev = "f0af79840852f15bd02e19586d733c3f7d79754c";
+          sha256 = "yc6hgShXH2ffcUthG9f3aHIi9zrc0dtBgGYh/veNZ6M=";
         };
 
         installPhase = ''
