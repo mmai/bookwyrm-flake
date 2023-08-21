@@ -27,7 +27,7 @@ Below is an example of a nixos configuration using this flake, you can also take
 
             # Network configuration.
             networking.useDHCP = false;
-            networking.firewall.allowedTCPPorts = [ 80 443 ]; # add 8888 to access flower
+            networking.firewall.allowedTCPPorts = [ 80 443 ];
             networking.hostName = hostname;
 
             nixpkgs.overlays = [ bookwyrm.overlay ];
@@ -49,14 +49,9 @@ Below is an example of a nixos configuration using this flake, you can also take
                 password = "-";
               };
 
-              flowerArgs = [ "--port=8888" ];
-
               celeryRedis.createLocally = true;
               activityRedis.createLocally = true;
             };
-
-            # Overrides default 30M
-            services.nginx.clientMaxBodySize = "100m";
 
           })
         ];

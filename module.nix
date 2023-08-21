@@ -411,8 +411,31 @@ in
       services.nginx = {
         enable = true;
         appendHttpConfig = ''
+          limit_req_zone $binary_remote_addr zone=loginlimit:10m rate=1r/s;
+
+          # include the cache status in the log message
+          log_format cache_log '$upstream_cache_status - '
+              '$remote_addr [$time_local] '
+              '"$request" $status $body_bytes_sent '
+              '"$http_referer" "$http_user_agent" '
+              '$upstream_response_time $request_time';
+
+          # Create a cache for responses from the web app
+          proxy_cache_path
+              /var/cache/nginx/bookwyrm_cache
+              keys_zone=bookwyrm_cache:20m
+              loader_threshold=400
+              loader_files=400
+              max_size=400m;
+
+          # use the accept header as part of the cache key
+          # since activitypub endpoints have both HTML and JSON
+          # on the same URI.
+          proxy_cache_key $scheme$proxy_host$uri$is_args$args$http_accept;
+
+
           upstream bookwyrm-api {
-          server ${cfg.apiIp}:${toString cfg.apiPort};
+            server ${cfg.apiIp}:${toString cfg.apiPort};
           }
         '';
         virtualHosts = 
@@ -511,11 +534,12 @@ in
 
         bookwyrm-init = {
           description = "bookwyrm initialization";
-          wantedBy = [ "bookwyrm-server.service" "bookwyrm-celery.service" ];
-          before   = [ "bookwyrm-server.service" "bookwyrm-celery.service" ];
+          wantedBy = [ "bookwyrm-server.service" "bookwyrm-celery.service"  "bookwyrm-celery-beat.service" ];
+          before   = [ "bookwyrm-server.service" "bookwyrm-celery.service"  "bookwyrm-celery-beat.service" ];
           environment = bookwyrmEnvironment;
           serviceConfig = serviceConfig // {
             Group = "${cfg.group}";
+            Type = "oneshot"; # So that other services start only when bookwyrm-init has completed
           };
           script = ''
             ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py migrate --noinput
@@ -564,6 +588,24 @@ in
           serviceConfig = serviceConfig // {
             RuntimeDirectory = "bookwyrmworker";
             ExecStart = "${pythonEnv}/bin/celery -A celerywyrm worker --loglevel=INFO -Q high_priority,medium_priority,low_priority";
+          };
+          environment = bookwyrmEnvironment;
+        };
+
+        bookwyrm-celery-beat = {
+          description = "Celery beat (periodic tasks) for bookwyrm.";
+          partOf = [ "bookwyrm.target" ];
+          wantedBy = [ "bookwyrm.target" ];
+          after = [
+            "bookwyrm-celery.service"
+          ];
+          requires = [
+            "bookwyrm-celery.service"
+          ];
+
+          serviceConfig = serviceConfig // {
+            RuntimeDirectory = "bookwyrmworker";
+            ExecStart = "${pythonEnv}/bin/celery -A celerywyrm beat --loglevel=INFO  --scheduler django_celery_beat.schedulers:DatabaseScheduler";
           };
           environment = bookwyrmEnvironment;
         };
