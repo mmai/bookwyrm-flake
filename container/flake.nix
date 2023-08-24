@@ -53,8 +53,6 @@
                 password = "-";
               };
 
-              flowerArgs = [ "--port=8888" ];
-
               celeryRedis.createLocally = true;
               activityRedis.createLocally = true;
             };

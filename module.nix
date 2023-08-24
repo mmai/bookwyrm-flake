@@ -161,7 +161,8 @@ in
 
         flowerArgs = mkOption {
           type = types.listOf types.str;
-          default = [ "--unix_socket=/run/bookwyrm/bookwyrm-flower.sock" ];
+          # default = [ "--unix_socket=/run/bookwyrm-flower.sock" ];
+          default = [ "--port=8888" ];
           description = "Arguments to pass to Flower (Celery management frontend).";
         };
 
@@ -422,8 +423,8 @@ in
 
           # Create a cache for responses from the web app
           proxy_cache_path
-              /var/cache/nginx/bookwyrm_cache
-              keys_zone=bookwyrm_cache:20m
+              /var/cache/nginx/activitypub_cache
+              keys_zone=activitypub_cache:20m
               loader_threshold=400
               loader_files=400
               max_size=400m;
@@ -431,7 +432,7 @@ in
           # use the accept header as part of the cache key
           # since activitypub endpoints have both HTML and JSON
           # on the same URI.
-          proxy_cache_key $scheme$proxy_host$uri$is_args$args$http_accept;
+          proxy_cache_key $scheme$host$uri$is_args$args$http_accept;
 
 
           upstream bookwyrm-api {
