@@ -84,6 +84,11 @@ let
 
     REDIS_ACTIVITY_PORT="${toString cfg.activityRedis.port}";
     REDIS_BROKER_PORT="${toString cfg.celeryRedis.port}";
+
+    # ajout nécessaire pour prod ??
+    CELERY_BROKER="redis://localhost:${toString cfg.celeryRedis.port}/0";
+    CELERY_RESULT_BACKEND="redis://localhost:${toString cfg.activityRedis.port}/0";
+
   } 
   // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST="${toString cfg.activityRedis.host}"; } else { REDIS_ACTIVITY_HOST="localhost"; } )
   // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST="${toString cfg.celeryRedis.host}"; } else { REDIS_BROKER_HOST="localhost"; } )
