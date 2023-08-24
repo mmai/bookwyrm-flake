@@ -59,7 +59,7 @@ let
 
   bookwyrmEnvironment = {
     SECRET_KEY="${cfg.api.djangoSecretKey}";
-    DEBUG="false";
+    DEBUG="${toString cfg.debug}";
     DOMAIN="${cfg.hostname}";
     EMAIL="${cfg.defaultFromEmail}";
     OL_URL="https://openlibrary.org";
@@ -106,6 +106,12 @@ in
     options = {
       services.bookwyrm = {
         enable = mkEnableOption "bookwyrm";
+
+        debug = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Debug mode.";
+        };
 
         user = mkOption {
           type = types.str;
@@ -555,7 +561,11 @@ in
           '';
         };
 
-        bookwyrm-server = {
+        bookwyrm-server = 
+          let 
+          debugParams = (if cfg.debug then " --log-level=debug" else "" );
+          in 
+        {
           description = "bookwyrm application server";
           partOf = [ "bookwyrm.target" ];
           after = [ 
@@ -566,10 +576,9 @@ in
           serviceConfig = serviceConfig // {
             ExecStart = ''${pythonEnv}/bin/gunicorn bookwyrm.wsgi:application \
               -w ${toString cfg.webWorkers} \
-              -b ${cfg.apiIp}:${toString cfg.apiPort}'';
+              -b ${cfg.apiIp}:${toString cfg.apiPort} ${debugParams}'';
           };
-              # --timeout 1800 \
-              # --log-level=debug \
+
           environment = bookwyrmEnvironment;
 
           wantedBy = [ "multi-user.target" ];
