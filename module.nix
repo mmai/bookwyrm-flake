@@ -57,9 +57,13 @@ let
     then builtins.readFile cfg.email.passwordFile
     else cfg.email.password;
 
-  bookwyrmEnvironment = {
+  bookwyrmEnvironment = 
+  let 
+    debug = ( if cfg.debug then "true" else "false" );
+  in 
+  {
     SECRET_KEY="${cfg.api.djangoSecretKey}";
-    DEBUG="${toString cfg.debug}";
+    DEBUG="${debug}";
     DOMAIN="${cfg.hostname}";
     EMAIL="${cfg.defaultFromEmail}";
     OL_URL="https://openlibrary.org";
