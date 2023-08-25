@@ -1,0 +1,116 @@
+diff --git a/bookwyrm/redis_store.py b/bookwyrm/redis_store.py
+index e188487aa..b3f14b24b 100644
+--- a/bookwyrm/redis_store.py
++++ b/bookwyrm/redis_store.py
+@@ -4,8 +4,13 @@ import redis
+ 
+ from bookwyrm import settings
+ 
+-r = redis.from_url(settings.REDIS_ACTIVITY_URL)
+-
++r = redis.Redis(
++    host=settings.REDIS_ACTIVITY_HOST,
++    port=settings.REDIS_ACTIVITY_PORT,
++    password=settings.REDIS_ACTIVITY_PASSWORD,
++    unix_socket_path=settings.REDIS_ACTIVITY_SOCKET,
++    db=settings.REDIS_ACTIVITY_DB_INDEX,
++)
+ 
+ class RedisStore(ABC):
+     """sets of ranked, related objects, like statuses for a user's feed"""
+diff --git a/bookwyrm/settings.py b/bookwyrm/settings.py
+index 829ddaef7..ff24d63c6 100644
+--- a/bookwyrm/settings.py
++++ b/bookwyrm/settings.py
+@@ -208,9 +208,10 @@ WSGI_APPLICATION = "bookwyrm.wsgi.application"
+ 
+ # redis/activity streams settings
+ REDIS_ACTIVITY_HOST = env("REDIS_ACTIVITY_HOST", "localhost")
+-REDIS_ACTIVITY_PORT = env.int("REDIS_ACTIVITY_PORT", 6379)
+-REDIS_ACTIVITY_PASSWORD = requests.utils.quote(env("REDIS_ACTIVITY_PASSWORD", ""))
+-REDIS_ACTIVITY_DB_INDEX = env.int("REDIS_ACTIVITY_DB_INDEX", 0)
++REDIS_ACTIVITY_PORT = env("REDIS_ACTIVITY_PORT", 6379)
++REDIS_ACTIVITY_PASSWORD = env("REDIS_ACTIVITY_PASSWORD", None)
++REDIS_ACTIVITY_SOCKET = env("REDIS_ACTIVITY_SOCKET", None)
++REDIS_ACTIVITY_DB_INDEX = env("REDIS_ACTIVITY_DB_INDEX", 0)
+ REDIS_ACTIVITY_URL = env(
+     "REDIS_ACTIVITY_URL",
+     f"redis://:{REDIS_ACTIVITY_PASSWORD}@{REDIS_ACTIVITY_HOST}:{REDIS_ACTIVITY_PORT}/{REDIS_ACTIVITY_DB_INDEX}",
+@@ -236,10 +237,14 @@ if env.bool("USE_DUMMY_CACHE", False):
+         }
+     }
+ else:
++    if (REDIS_ACTIVITY_SOCKET):
++        redis_activity_url = f"unix://{REDIS_ACTIVITY_SOCKET}?db={REDIS_ACTIVITY_DB_INDEX}"
++    else:
++        redis_activity_url = f"redis://:{REDIS_ACTIVITY_PASSWORD}@{REDIS_ACTIVITY_HOST}:{REDIS_ACTIVITY_PORT}/{REDIS_ACTIVITY_DB_INDEX}"
+     CACHES = {
+         "default": {
+             "BACKEND": "django_redis.cache.RedisCache",
+-            "LOCATION": REDIS_ACTIVITY_URL,
++            "LOCATION": redis_activity_url,
+             "OPTIONS": {
+                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
+             },
+diff --git a/bookwyrm/views/admin/celery_status.py b/bookwyrm/views/admin/celery_status.py
+index cd8b85b6d..9391d1dab 100644
+--- a/bookwyrm/views/admin/celery_status.py
++++ b/bookwyrm/views/admin/celery_status.py
+@@ -29,7 +29,13 @@ from bookwyrm.tasks import (
+     MISC,
+ )
+ 
+-r = redis.from_url(settings.REDIS_BROKER_URL)
++r = redis.Redis(
++    host=settings.REDIS_BROKER_HOST,
++    port=settings.REDIS_BROKER_PORT,
++    password=settings.REDIS_BROKER_PASSWORD,
++    unix_socket_path=settings.REDIS_BROKER_SOCKET,
++    db=settings.REDIS_BROKER_DB_INDEX,
++)
+ 
+ # pylint: disable= no-self-use
+ @method_decorator(login_required, name="dispatch")
+diff --git a/celerywyrm/settings.py b/celerywyrm/settings.py
+index 20f194a12..3ca3d3fa6 100644
+--- a/celerywyrm/settings.py
++++ b/celerywyrm/settings.py
+@@ -6,17 +6,33 @@ from bookwyrm.settings import *
+ QUERY_TIMEOUT = env.int("CELERY_QUERY_TIMEOUT", env.int("QUERY_TIMEOUT", 30))
+ 
+ # pylint: disable=line-too-long
+-REDIS_BROKER_PASSWORD = requests.compat.quote(env("REDIS_BROKER_PASSWORD", ""))
++if (password := env("REDIS_BROKER_PASSWORD", None)) is not None:
++    REDIS_BROKER_PASSWORD = requests.utils.quote(password)
++else:
++    REDIS_BROKER_PASSWORD = None
+ REDIS_BROKER_HOST = env("REDIS_BROKER_HOST", "redis_broker")
+-REDIS_BROKER_PORT = env.int("REDIS_BROKER_PORT", 6379)
+-REDIS_BROKER_DB_INDEX = env.int("REDIS_BROKER_DB_INDEX", 0)
++REDIS_BROKER_PORT = env("REDIS_BROKER_PORT", 6379)
++REDIS_BROKER_SOCKET = env("REDIS_BROKER_SOCKET", None)
++REDIS_BROKER_DB_INDEX = env("REDIS_BROKER_DB_INDEX", 0)
+ REDIS_BROKER_URL = env(
+     "REDIS_BROKER_URL",
+     f"redis://:{REDIS_BROKER_PASSWORD}@{REDIS_BROKER_HOST}:{REDIS_BROKER_PORT}/{REDIS_BROKER_DB_INDEX}",
+ )
+ 
+-CELERY_BROKER_URL = REDIS_BROKER_URL.replace("unix:", "redis+socket:")
+-CELERY_RESULT_BACKEND = REDIS_BROKER_URL.replace("unix:", "redis+socket:")
++# pylint: disable=line-too-long
++if REDIS_BROKER_SOCKET is not None:
++    CELERY_BROKER_URL = "redis+socket://{}?virtual_host={}".format(
++        REDIS_BROKER_SOCKET ,
++        REDIS_BROKER_DB_INDEX,
++    )
++    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
++else:
++    CELERY_BROKER_URL = "redis://{}:{}/{}".format(
++        REDIS_BROKER_HOST,
++        REDIS_BROKER_PORT,
++        REDIS_BROKER_DB_INDEX,
++    )
++    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+ 
+ CELERY_DEFAULT_QUEUE = "low_priority"
+ CELERY_CREATE_MISSING_QUEUES = True

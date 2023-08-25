@@ -62,36 +62,34 @@ let
     debug = ( if cfg.debug then "true" else "false" );
   in 
   {
-    SECRET_KEY="${cfg.api.djangoSecretKey}";
-    DEBUG="${debug}";
-    DOMAIN="${cfg.hostname}";
-    EMAIL="${cfg.defaultFromEmail}";
-    OL_URL="https://openlibrary.org";
-    BOOKWYRM_DATABASE_BACKEND="postgres";
-    MEDIA_ROOT="${cfg.api.mediaRoot}";
-    STATIC_ROOT="${cfg.api.staticRoot}";
+    SECRET_KEY = cfg.api.djangoSecretKey;
+    DEBUG = debug;
+    DOMAIN = cfg.hostname;
+    EMAIL = cfg.defaultFromEmail;
+    OL_URL = "https://openlibrary.org";
+    BOOKWYRM_DATABASE_BACKEND = "postgres";
+    MEDIA_ROOT = cfg.api.mediaRoot;
+    STATIC_ROOT = cfg.api.staticRoot;
 
-    POSTGRES_PASSWORD="${databasePassword}";
-    POSTGRES_USER="${cfg.database.user}";
-    POSTGRES_DB="${cfg.database.name}";
-    POSTGRES_HOST="${cfg.database.host}";
+    POSTGRES_PASSWORD = databasePassword;
+    POSTGRES_USER = cfg.database.user;
+    POSTGRES_DB = cfg.database.name;
+    POSTGRES_HOST = cfg.database.host;
 
-    EMAIL_HOST="${cfg.email.host}";
-    EMAIL_PORT="${toString cfg.email.port}";
-    EMAIL_HOST_USER="${cfg.email.user}";
-    EMAIL_HOST_PASSWORD="${emailPassword}";
-    EMAIL_USE_TLS="true";
+    EMAIL_HOST = cfg.email.host;
+    EMAIL_PORT = (toString cfg.email.port);
+    EMAIL_HOST_USER = cfg.email.user;
+    EMAIL_HOST_PASSWORD = emailPassword;
+    EMAIL_USE_TLS = "true";
 
-    REDIS_ACTIVITY_PORT="${toString cfg.activityRedis.port}";
-    REDIS_BROKER_PORT="${toString cfg.celeryRedis.port}";
-
-    # ajout nécessaire pour prod ??
-    CELERY_BROKER="redis://localhost:${toString cfg.celeryRedis.port}/0";
-    CELERY_RESULT_BACKEND="redis://localhost:${toString cfg.activityRedis.port}/0";
+    REDIS_ACTIVITY_PORT = (toString cfg.activityRedis.port);
+    REDIS_ACTIVITY_SOCKET = (if cfg.activityRedis.unixSocket != null then cfg.activityRedis.unixSocket else "");
+    REDIS_BROKER_PORT = (toString cfg.celeryRedis.port);
+    REDIS_BROKER_SOCKET = (if cfg.celeryRedis.unixSocket != null then cfg.celeryRedis.unixSocket else "");
 
   } 
-  // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST="${toString cfg.activityRedis.host}"; } else { REDIS_ACTIVITY_HOST="localhost"; } )
-  // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST="${toString cfg.celeryRedis.host}"; } else { REDIS_BROKER_HOST="localhost"; } )
+  // (if cfg.activityRedis.host != null then { REDIS_ACTIVITY_HOST = (toString cfg.activityRedis.host); } else {} )
+  // (if cfg.celeryRedis.host != null then { REDIS_BROKER_HOST = (toString cfg.celeryRedis.host); } else {} )
   ;
 
   redisCreateLocally = cfg.celeryRedis.createLocally || cfg.activityRedis.createLocally;
@@ -104,7 +102,6 @@ let
   bookwyrmEnv = {
     ENV_FILE = "${bookwyrmEnvFile}";
   };
-
 
  bookwyrmManageScript = (pkgs.writeScriptBin "bookwyrm-manage" ''
      ${bookwyrmEnvScriptData} ${pythonEnv.interpreter} ${pkgs.bookwyrm}/manage.py "$@"
@@ -143,15 +140,25 @@ in
 
           host = mkOption {
             type = types.nullOr types.str; 
-            default = "localhost";
+            default = null;
             description = "Activity Redis host address.";
           }; 
 
           port = mkOption {
-            type = types.int;
-            default = 6379;
+            type = types.nullOr types.int;
+            default = null;
             description = "Activity Redis port.";
           };
+
+          unixSocket = mkOption {
+            type = types.nullOr types.str;
+            default = "/run/activityredis.sock";
+            description = ''
+              Unix socket to connect to for activity Redis. When set, the host and
+              port option will be ignored.
+              '';
+          };
+
         };
 
         celeryRedis = {
@@ -161,17 +168,28 @@ in
             description = "Ensure Redis is running locally and use it.";
           };
 
+          # note that there are assertions to prevent three of these being null
           host = mkOption {
             type = types.nullOr types.str; 
-            default = "localhost";
-            description = "Activity Redis host address.";
+            default = null;
+            description = "Celery Redis host address.";
           }; 
 
           port = mkOption {
-            type = types.int;
-            default = 6380;
-            description = "Activity Redis port.";
+            type = types.nullOr types.int;
+            default = null;
+            description = "Celery Redis port.";
           };
+
+          unixSocket = mkOption {
+            type = types.nullOr types.str;
+            default = "/run/celeryredis.sock";
+            description = ''
+              Unix socket to connect to for celery Redis. When set, the host and
+              port option will be ignored.
+              '';
+          };
+
         };
 
         flowerArgs = mkOption {
@@ -390,6 +408,12 @@ in
         { assertion = cfg.database.createLocally -> cfg.database.host == "localhost";
           message = "services.bookwyrm.database.host must be set to localhost if services.bookwyrm.database.createLocally is set to true";
         }
+        { assertion = cfg.activityRedis.unixSocket != null || (cfg.activityRedis.host != null && cfg.activityRedis.port != null);
+          message = "config.services.bookwyrm.activityRedis needs to have either a unixSocket defined, or both a host and a port defined.";
+        }
+        { assertion = cfg.celeryRedis.unixSocket != null || (cfg.celeryRedis.host != null && cfg.celeryRedis.port != null);
+          message = "config.services.bookwyrm.celeryRedis needs to have either a unixSocket defined, or both a host and a port defined.";
+        }
       ];
 
       users.users.bookwyrm = mkIf (cfg.user == "bookwyrm") { group = cfg.group; isSystemUser = true; };
@@ -412,17 +436,20 @@ in
         '';
       };
 
-      services.redis.servers = optionalAttrs cfg.activityRedis.createLocally rec {
+      services.redis.servers = optionalAttrs cfg.activityRedis.createLocally {
         bookwyrm-activity = {
           enable = true;
-          port = cfg.activityRedis.port;
+          user = "bookwyrm";
         };
-      } // optionalAttrs cfg.celeryRedis.createLocally rec {
+      } // optionalAttrs cfg.celeryRedis.createLocally {
         bookwyrm-celery = {
           enable = true;
-          port = cfg.celeryRedis.port;
+          user = "bookwyrm";
         };
       };
+
+      services.bookwyrm.activityRedis.unixSocket = mkIf cfg.activityRedis.createLocally config.services.redis.servers.bookwyrm-activity.unixSocket;
+      services.bookwyrm.celeryRedis.unixSocket =  mkIf cfg.celeryRedis.createLocally config.services.redis.servers.bookwyrm-celery.unixSocket;
 
       services.nginx = {
         enable = true;

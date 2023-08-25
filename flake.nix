@@ -26,6 +26,7 @@
           rev = "f0af79840852f15bd02e19586d733c3f7d79754c";
           sha256 = "yc6hgShXH2ffcUthG9f3aHIi9zrc0dtBgGYh/veNZ6M=";
         };
+        patches = [ ./testchanges.patch ];
 
         installPhase = ''
             mkdir $out
