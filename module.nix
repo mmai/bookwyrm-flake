@@ -633,7 +633,7 @@ in
 
           serviceConfig = serviceConfig // {
             RuntimeDirectory = "bookwyrmworker";
-            ExecStart = "${pythonEnv}/bin/celery -A celerywyrm worker --loglevel=INFO -Q high_priority,medium_priority,low_priority";
+            ExecStart = "${pythonEnv}/bin/celery -A celerywyrm worker -l info -Q high_priority,medium_priority,low_priority,streams,images,suggested_users,email,connectors,lists,inbox,imports,import_triggered,broadcast,misc";
           };
           environment = bookwyrmEnvironment;
         };
